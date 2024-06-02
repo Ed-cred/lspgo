@@ -21,7 +21,17 @@ type TextDocumentPositionParams struct {
 	Position     Position               `json:"position"`
 }
 
+type Location struct {
+	URI   string `json:"uri"`
+	Range Range  `json:"range"`
+}
+
 type Position struct {
 	Line      int `json:"line"`
 	Character int `json:"character"`
+}
+
+type Range struct {
+	Start Position `json:"start"`
+	End   Position `json:"end"`
 }
