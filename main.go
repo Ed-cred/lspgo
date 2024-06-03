@@ -15,7 +15,7 @@ import (
 
 func main() {
 	fmt.Println("Starting...")
-	logger := getLogger("c:\\dev\\lspgo\\log.txt")
+	logger := getLogger("d:\\Dev\\lspgo\\log.txt")
 	logger.Println("logger started")
 	scanner := bufio.NewScanner(os.Stdin)
 	scanner.Split(rpc.Split)
@@ -78,6 +78,13 @@ func handleMessage(logger *log.Logger, writer io.Writer, state analysis.State, m
 			logger.Printf("textDocument/definition: %s", err)
 		}
 		response := state.Definition(request.ID, request.Params.TextDocument.URI, request.Params.Position)
+		writeResponse(writer, response)
+	case "textDocument/codeAction":
+		var request lsp.CodeActionRequest
+		if err := json.Unmarshal(content, &request); err != nil {
+			logger.Printf("textDocument/codeAction: %s", err)
+		}
+		response := state.CodeAction(request.ID, request.Params.TextDocument.URI)
 		writeResponse(writer, response)
 	}
 }
