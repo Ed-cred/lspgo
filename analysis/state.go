@@ -16,13 +16,41 @@ func NewState() State {
 		Documents: map[string]string{},
 	}
 }
+func getDiagnosticsForFile(text string) []lsp.Diagnostic {
+	diagnostics := []lsp.Diagnostic{}
+	for row, line := range strings.Split(text, "\n") {
+		if strings.Contains(line, "VS Code") {
+			idx := strings.Index(line, "VS Code")
+			diagnostics = append(diagnostics, lsp.Diagnostic{
+				Range:    LineRange(row, idx, idx+len("VS Code")),
+				Severity: 1,
+				Source:   "duh",
+				Message:  "FIX THIS IMMEDIATELY",
+			})
+		}
+		if strings.Contains(line, "Neovim") {
+			idx := strings.Index(line, "Neovim")
+			diagnostics = append(diagnostics, lsp.Diagnostic{
+				Range:    LineRange(row, idx, idx+len("Neovim")),
+				Severity: 4,
+				Source:   "nice one",
+				Message:  "You made a very good choice, congrats!",
+			})
+		}
+	}
 
-func (s *State) OpenDocument(uri, text string) {
+	return diagnostics
+}
+func (s *State) OpenDocument(uri, text string) []lsp.Diagnostic {
 	s.Documents[uri] = text
+
+	return getDiagnosticsForFile(text)
 }
 
-func (s *State) UpdateDocument(uri, text string) {
+func (s *State) UpdateDocument(uri, text string) []lsp.Diagnostic {
 	s.Documents[uri] = text
+
+	return getDiagnosticsForFile(text)
 }
 
 func (s *State) Hover(id int, uri string, position lsp.Position) lsp.HoverResponse {
@@ -59,6 +87,7 @@ func (s *State) Definition(id int, uri string, position lsp.Position) lsp.Defini
 		},
 	}
 }
+
 func (s *State) CodeAction(id int, uri string) lsp.CodeActionResponse {
 	text := s.Documents[uri]
 	actions := []lsp.CodeAction{}
@@ -109,5 +138,23 @@ func LineRange(line, start, end int) lsp.Range {
 			Line:      line,
 			Character: end,
 		},
+	}
+}
+
+func (s *State) Completion(id int, uri string) lsp.CompletionResponse {
+	items := []lsp.CompletionItem{
+		{
+			Label:         "Neovim (BTW)",
+			Detail:        "The one and only editor",
+			Documentation: "Subscribe to teej",
+		},
+	}
+
+	return lsp.CompletionResponse{
+		Response: lsp.Response{
+			RPC: "2.0",
+			ID:  &id,
+		},
+		Result: items,
 	}
 }
